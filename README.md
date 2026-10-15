@@ -2,6 +2,8 @@
 
 MediaHub is a Windows desktop media launcher built with Wails v2, Go, and a vanilla JavaScript frontend. It can open media links in VLC, download through yt-dlp, and keep download history.
 
+<img width="1002" height="720" alt="mediahub" src="https://github.com/user-attachments/assets/d5b73606-a921-4744-b02c-a746b1562f3d" />
+
 ## Requirements
 
 - Windows 10 or 11, 64-bit
