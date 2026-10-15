@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 )
 
 type App struct {
@@ -16,6 +17,7 @@ type App struct {
 	deps      *Dependencies
 	downloads *Downloader
 	settings  Preferences
+	quitting  atomic.Bool
 }
 
 type Preferences struct {
@@ -102,7 +104,14 @@ func (a *App) CheckForUpdates() (bool, error)       { return CheckForUpdates(a.c
 func (a *App) ApplyUpdate(url, sha256 string) error { return ApplyUpdate(a.ctx, url, sha256) }
 func (a *App) Minimise()                            { wruntime.WindowHide(a.ctx) }
 func (a *App) Close()                               { wruntime.WindowHide(a.ctx) }
+func (a *App) quit() {
+	a.quitting.Store(true)
+	wruntime.Quit(a.ctx)
+}
 func (a *App) onBeforeClose(ctx context.Context) bool {
+	if a.quitting.Load() {
+		return false
+	}
 	wruntime.WindowHide(ctx)
 	return true
 }

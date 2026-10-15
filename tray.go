@@ -38,7 +38,7 @@ func (a *App) startTray() {
 					case <-playItem.ClickedCh:
 						a.playClipboardFromTray()
 					case <-quitItem.ClickedCh:
-						wruntime.Quit(a.ctx)
+						a.quit()
 						systray.Quit()
 						return
 					case <-a.ctx.Done():

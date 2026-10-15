@@ -238,7 +238,7 @@ func ApplyUpdate(ctx context.Context, downloadURL, expectedDigest string) error 
 	if err = cmd.Start(); err != nil {
 		return err
 	}
-	go func() { time.Sleep(250 * time.Millisecond); wruntime.Quit(ctx) }()
+	go func() { time.Sleep(250 * time.Millisecond); currentApp.quit() }()
 	return nil
 }
 
