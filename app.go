@@ -102,7 +102,7 @@ func (a *App) OpenFolder(path string) error         { return OpenFolder(path) }
 func (a *App) UpdateYtdlp() error                   { return a.deps.UpdateYtdlp() }
 func (a *App) CheckForUpdates() (bool, error)       { return CheckForUpdates(a.ctx) }
 func (a *App) ApplyUpdate(url, sha256 string) error { return ApplyUpdate(a.ctx, url, sha256) }
-func (a *App) Minimise()                            { wruntime.WindowHide(a.ctx) }
+func (a *App) Minimise()                            { wruntime.WindowMinimise(a.ctx) }
 func (a *App) Close()                               { wruntime.WindowHide(a.ctx) }
 func (a *App) quit() {
 	a.quitting.Store(true)

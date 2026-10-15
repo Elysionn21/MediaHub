@@ -31,7 +31,7 @@ The executable icon is build\windows\icon.ico. The app header logo is embedded f
 - Use the Downloads folder by default; change language or download location in Settings.
 - Detect supported media links copied to the clipboard and insert the detected link by clicking its notification.
 - Check GitHub Releases for updates and show release notes and download progress.
-- Use the system tray icon to reopen MediaHub, play the clipboard link, or quit. Closing or minimizing the window hides it to the tray.
+- Use the system tray icon to reopen MediaHub, play the clipboard link, or quit. Closing the window hides it to the tray; minimizing keeps it in the taskbar.
 - A per-user Start Menu shortcut is created automatically and uses the executable icon.
 - Store preferences, yt-dlp, and history under %LOCALAPPDATA%\MediaHub.
 
