@@ -1,0 +1,27 @@
+# Wails build output
+/build/bin/
+
+# Go artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/bin/
+/vendor/
+
+# Frontend dependencies and build output
+/frontend/node_modules/
+/frontend/dist/
+/frontend/build/
+/frontend/.vite/
+
+# Local environment and editor files
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

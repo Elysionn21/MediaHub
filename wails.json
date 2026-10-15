@@ -1,0 +1,1 @@
+{"$schema":"https://wails.io/schemas/config.v2.json","name":"mediahub","outputfilename":"MediaHub","frontend:dir":"frontend","frontend:install":"","frontend:build":"","frontend:dev:watcher":"","frontend:dev:serverUrl":"","author":{"name":"MediaHub","email":""}}
