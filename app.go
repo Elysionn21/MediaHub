@@ -89,10 +89,10 @@ func (a *App) loadPreferences() Preferences {
 	_ = os.MkdirAll(p.DownloadDir, 0755)
 	return p
 }
-func (a *App) OpenFolder(path string) error   { return OpenFolder(path) }
-func (a *App) UpdateYtdlp() error             { return a.deps.UpdateYtdlp() }
-func (a *App) CheckForUpdates() (bool, error) { return CheckForUpdates(a.ctx) }
-func (a *App) ApplyUpdate(url string) error   { return ApplyUpdate(a.ctx, url) }
-func (a *App) Minimise()                      { wruntime.WindowMinimise(a.ctx) }
-func (a *App) Close()                         { wruntime.Quit(a.ctx) }
-func (a *App) ClipboardText() string          { s, _ := wruntime.ClipboardGetText(a.ctx); return s }
+func (a *App) OpenFolder(path string) error         { return OpenFolder(path) }
+func (a *App) UpdateYtdlp() error                   { return a.deps.UpdateYtdlp() }
+func (a *App) CheckForUpdates() (bool, error)       { return CheckForUpdates(a.ctx) }
+func (a *App) ApplyUpdate(url, sha256 string) error { return ApplyUpdate(a.ctx, url, sha256) }
+func (a *App) Minimise()                            { wruntime.WindowMinimise(a.ctx) }
+func (a *App) Close()                               { wruntime.Quit(a.ctx) }
+func (a *App) ClipboardText() string                { s, _ := wruntime.ClipboardGetText(a.ctx); return s }

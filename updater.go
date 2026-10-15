@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,8 +28,9 @@ type releaseInfo struct {
 	Tag    string `json:"tag_name"`
 	Notes  string `json:"body"`
 	Assets []struct {
-		Name string `json:"name"`
-		URL  string `json:"browser_download_url"`
+		Name   string `json:"name"`
+		URL    string `json:"browser_download_url"`
+		Digest string `json:"digest"`
 	} `json:"assets"`
 }
 
@@ -54,10 +57,10 @@ func CheckForUpdates(ctx context.Context) (bool, error) {
 	if rel.Tag == "" || !newerVersion(rel.Tag, CurrentVersion) {
 		return false, nil
 	}
-	assetURL := ""
+	assetURL, assetDigest := "", ""
 	for _, a := range rel.Assets {
 		if strings.EqualFold(filepath.Ext(a.Name), ".exe") {
-			assetURL = a.URL
+			assetURL, assetDigest = a.URL, a.Digest
 			if strings.EqualFold(a.Name, "MediaHub.exe") {
 				break
 			}
@@ -66,7 +69,10 @@ func CheckForUpdates(ctx context.Context) (bool, error) {
 	if assetURL == "" {
 		return false, fmt.Errorf("release %s has no .exe asset", rel.Tag)
 	}
-	wruntime.EventsEmit(ctx, "app-update-available", map[string]string{"version": rel.Tag, "notes": rel.Notes, "downloadUrl": assetURL})
+	if _, err := parseSHA256Digest(assetDigest); err != nil {
+		return false, fmt.Errorf("release %s has no valid GitHub SHA-256 asset digest: %w", rel.Tag, err)
+	}
+	wruntime.EventsEmit(ctx, "app-update-available", map[string]string{"version": rel.Tag, "notes": rel.Notes, "downloadUrl": assetURL, "sha256": assetDigest})
 	return true, nil
 }
 
@@ -152,7 +158,11 @@ func comparePrerelease(a, b string) int {
 	return 0
 }
 
-func ApplyUpdate(ctx context.Context, downloadURL string) error {
+func ApplyUpdate(ctx context.Context, downloadURL, expectedDigest string) error {
+	expectedSHA256, err := parseSHA256Digest(expectedDigest)
+	if err != nil {
+		return fmt.Errorf("invalid GitHub asset SHA-256 digest: %w", err)
+	}
 	u, err := url.Parse(downloadURL)
 	if err != nil || u.Scheme != "https" || !strings.EqualFold(u.Host, "github.com") || !strings.HasPrefix(u.Path, "/Elysionn21/MediaHub/releases/download/") || !strings.EqualFold(filepath.Ext(u.Path), ".exe") {
 		return fmt.Errorf("update URL is not a MediaHub GitHub release executable")
@@ -184,7 +194,8 @@ func ApplyUpdate(ctx context.Context, downloadURL string) error {
 		return err
 	}
 	pw := &updateProgressWriter{ctx: ctx, total: r.ContentLength}
-	_, copyErr := io.Copy(f, io.TeeReader(r.Body, pw))
+	hash := sha256.New()
+	_, copyErr := io.Copy(io.MultiWriter(f, hash), io.TeeReader(r.Body, pw))
 	closeErr := f.Close()
 	if copyErr != nil {
 		_ = os.Remove(tmp)
@@ -193,6 +204,10 @@ func ApplyUpdate(ctx context.Context, downloadURL string) error {
 	if closeErr != nil {
 		_ = os.Remove(tmp)
 		return closeErr
+	}
+	if actualSHA256 := hex.EncodeToString(hash.Sum(nil)); !strings.EqualFold(actualSHA256, expectedSHA256) {
+		_ = os.Remove(tmp)
+		return fmt.Errorf("update SHA-256 mismatch: expected %s, got %s", expectedSHA256, actualSHA256)
 	}
 	check, err := os.Open(tmp)
 	if err != nil {
@@ -227,6 +242,20 @@ func ApplyUpdate(ctx context.Context, downloadURL string) error {
 	return nil
 }
 
+func parseSHA256Digest(digest string) (string, error) {
+	digest = strings.TrimSpace(digest)
+	if len(digest) < len("sha256:") || !strings.EqualFold(digest[:len("sha256:")], "sha256:") {
+		return "", fmt.Errorf("digest must use sha256")
+	}
+	value := digest[len("sha256:"):]
+	if len(value) != 64 {
+		return "", fmt.Errorf("SHA-256 digest must contain 64 hex characters")
+	}
+	if _, err := hex.DecodeString(value); err != nil {
+		return "", fmt.Errorf("invalid SHA-256 hex value")
+	}
+	return strings.ToLower(value), nil
+}
 func cmdQuote(s string) string { return `"` + strings.ReplaceAll(s, `"`, `\"`) + `"` }
 
 type updateProgressWriter struct {
