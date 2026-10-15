@@ -21,7 +21,7 @@ import (
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-const CurrentVersion = "v0.1.0"
+const CurrentVersion = "v0.2.0"
 const GitHubRepo = "https://api.github.com/repos/Elysionn21/MediaHub/releases/latest"
 
 type releaseInfo struct {

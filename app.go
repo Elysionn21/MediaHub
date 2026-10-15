@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -37,10 +38,16 @@ func (a *App) startup(ctx context.Context) {
 	a.downloads = NewDownloader(ctx, a.dataDir)
 	a.downloads.SetDirectory(a.settings.DownloadDir)
 	go a.deps.Ensure()
+	a.startTray()
+	go func() {
+		if err := ensureStartMenuShortcut(); err != nil {
+			log.Printf("create Start Menu shortcut: %v", err)
+		}
+	}()
 	go a.watchClipboard()
 	go func() { _, _ = CheckForUpdates(ctx) }()
 }
-func (a *App) shutdown(context.Context)                 {}
+func (a *App) shutdown(context.Context)                 { systrayQuit() }
 func (a *App) PlayMedia(url string, enqueue bool) error { return PlayMedia(url, enqueue) }
 func (a *App) DownloadMedia(url, format string) error   { return a.downloads.DownloadMedia(url, format) }
 func (a *App) History() []HistoryItem                   { return a.downloads.History() }
@@ -93,6 +100,10 @@ func (a *App) OpenFolder(path string) error         { return OpenFolder(path) }
 func (a *App) UpdateYtdlp() error                   { return a.deps.UpdateYtdlp() }
 func (a *App) CheckForUpdates() (bool, error)       { return CheckForUpdates(a.ctx) }
 func (a *App) ApplyUpdate(url, sha256 string) error { return ApplyUpdate(a.ctx, url, sha256) }
-func (a *App) Minimise()                            { wruntime.WindowMinimise(a.ctx) }
-func (a *App) Close()                               { wruntime.Quit(a.ctx) }
-func (a *App) ClipboardText() string                { s, _ := wruntime.ClipboardGetText(a.ctx); return s }
+func (a *App) Minimise()                            { wruntime.WindowHide(a.ctx) }
+func (a *App) Close()                               { wruntime.WindowHide(a.ctx) }
+func (a *App) onBeforeClose(ctx context.Context) bool {
+	wruntime.WindowHide(ctx)
+	return true
+}
+func (a *App) ClipboardText() string { s, _ := wruntime.ClipboardGetText(a.ctx); return s }

@@ -31,11 +31,13 @@ The executable icon is build\windows\icon.ico. The app header logo is embedded f
 - Use the Downloads folder by default; change language or download location in Settings.
 - Detect supported media links copied to the clipboard and insert the detected link by clicking its notification.
 - Check GitHub Releases for updates and show release notes and download progress.
+- Use the system tray icon to reopen MediaHub, play the clipboard link, or quit. Closing or minimizing the window hides it to the tray.
+- A per-user Start Menu shortcut is created automatically and uses the executable icon.
 - Store preferences, yt-dlp, and history under %LOCALAPPDATA%\MediaHub.
 
 ## Current limitations
 
-- System tray and global Alt+V hotkey integrations are placeholders and are not implemented.
+- The system tray menu is implemented. The global Alt+V hotkey is not implemented.
 - VLC and yt-dlp are external programs. VLC is not bundled with the portable executable.
 - Automatic updates are configured for the public repository Elysionn21/MediaHub. Each release must include a Windows .exe asset named MediaHub.exe.
 - Before replacing the running executable, the updater verifies the downloaded file against the SHA-256 digest returned by the GitHub Releases API and confirms it is a Windows executable. GitHub asset digests are checked over HTTPS. The app does not use Windows code signing; publish release assets from a trusted build environment.
